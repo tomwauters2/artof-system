@@ -66,7 +66,7 @@ class RobotConsumer(CustomConsumer):
             robot_manager.set_velocity(vx, omega)
 
 class VisualisationConsumer(CustomConsumer):
-    update_time_ms = 500 
+    update_time_ms = 1000
 
     async def connect(self):
         """Overschrijf de connect om de standaard tekst-loop te voorkomen."""

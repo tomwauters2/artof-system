@@ -31,12 +31,22 @@ class GeoJson:
     def load(self):
         """loads the file if it exists or else a empty GeoDataFrame."""
         default_columns = ['name', 'type', 'geometry', 'raster_source']
-        
+
         if path.exists(self.file_path):
             try:
                 self.gdf = gpd.read_file(self.file_path)
                 if 'name' not in self.gdf.columns:
                     self.gdf['name'] = None
+                # Fix CRS mismatch: file may declare EPSG:4326 but contain UTM coordinates
+                if not self.gdf.empty and self.gdf.crs:
+                    bounds = self.gdf.total_bounds  # (minx, miny, maxx, maxy)
+                    if abs(bounds[0]) > 180 or abs(bounds[1]) > 90:
+                        # Coordinates are out of lat/lng range → UTM
+                        # Detect UTM zone from easting (x)
+                        utm_zone = int((bounds[0] + 180) / 6) + 1
+                        utm_crs = f"EPSG:326{utm_zone:02d}"
+                        self.gdf = self.gdf.set_crs(utm_crs, allow_override=True)
+                        self.gdf = self.gdf.to_crs("EPSG:4326")
             except Exception as e:
                 print(f"Fout bij laden van {self.file_path}: {e}")
                 self.gdf = gpd.GeoDataFrame(columns=default_columns, crs="EPSG:4326")

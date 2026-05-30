@@ -319,6 +319,38 @@
                 }
             }
 
+            // Draw robot contour as vector (smooth 200ms updates, no rasterization needed)
+            if (data.robot && data.robot.contours && data.robot.contours.latlng) {
+                L.polygon(data.robot.contours.latlng, {
+                    color: '#ff8c00',
+                    fillColor: '#ff8c00',
+                    fillOpacity: 0.85,
+                    weight: 1.5,
+                    interactive: false
+                }).addTo(robotGroup);
+            }
+
+            // Draw active implement sections as vectors
+            if (data.implements) {
+                for (let impName in data.implements) {
+                    let imp = data.implements[impName];
+                    if (imp.sections) {
+                        imp.sections.forEach(function(section) {
+                            if (section.latlng && section.latlng.length >= 3) {
+                                let color = section.rate > 0 ? '#00c800' : '#888888';
+                                L.polygon(section.latlng, {
+                                    color: color,
+                                    fillColor: color,
+                                    fillOpacity: 0.6,
+                                    weight: 1,
+                                    interactive: false
+                                }).addTo(robotGroup);
+                            }
+                        });
+                    }
+                }
+            }
+
             if (data.controller_info && data.controller_info.current) {
                 let currentPoint = data.controller_info.current.latlng;
                 let carrotPoint = data.controller_info.carrot.latlng;
